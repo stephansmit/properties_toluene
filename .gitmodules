@@ -1,0 +1,3 @@
+[submodule "fluidmodels_su2"]
+	path = fluidmodels_su2
+	url = git@github.com:stephansmit/fluidmodels_su2.git
