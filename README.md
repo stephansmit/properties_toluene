@@ -8,7 +8,7 @@ python3 -m pip install numpy pandas CoolProp matplotlib
 
 ## Usage 
 Create the module
-~~~~~
+~~~~
 cd fluidmodels_su2
 swig -c++ -python3 su2_models.i
 python3 setup.py build_ext --inplace
