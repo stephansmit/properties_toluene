@@ -18,5 +18,3 @@ Run the script
 ~~~~
 python3 run.py
 ~~~~
-
-~
