@@ -16,6 +16,7 @@ class Fluid(object):
          self.df['R']= self.df.apply(lambda x: self.get_density(x['P'], x['T']),axis=1)
          self.df['S']= self.df.apply(lambda x: self.get_entropy(x['P'], x['T']),axis=1)
          self.df['E']= self.df.apply(lambda x: self.get_internal_energy(x['P'], x['T']),axis=1)
+         self.df['A']= self.df.apply(lambda x: self.get_soundspeed(x['P'], x['T']),axis=1)
 
 
 class SU2Fluid(Fluid):
