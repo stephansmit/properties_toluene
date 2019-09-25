@@ -6,11 +6,7 @@ if __name__=="__main__":
     gamma =1.06
     R = 90.23
     ig = fluids.IdealGasFluid("Toluene", Pref, Tref)
-    sig = fluids.SpecificIdealGasFluid("Toluene", gamma, R)
-    spr = fluids.SpecificPengRobinsonFluid("Toluene", gamma, R)
-    print(ig.gamma)
-    print(ig.R)
-    print(sig.gamma)
-    print(sig.R)
-    print(spr.acentric)
+    ig.create_table(1e5, 2e5, 400, 500, 10, 10)
+
+    print(ig.df)
 

@@ -1,11 +1,22 @@
 import CoolProp.CoolProp as CP
 from fluidmodels_su2.SU2Models import *
+import numpy as np
+import pandas as pd
 class Fluid(object):
     def __init__(self, name):
         self.name = name
+    
+    def create_table(self,Pmax, Pmin,Tmax, Tmin, Np, Nt):
+         P_vec= np.geomspace(Pmin, Pmax, Np)
+         T_vec = np.linspace(Tmin, Tmax, Nt)
+         T = np.array([[t for t in T_vec ] for p in P_vec])
+         P = np.array([[p for t in T_vec ] for p in P_vec])
+         self.df = pd.DataFrame(data= [T.flatten(), P.flatten()]).transpose()
+         self.df.columns = ["T", "P"]
+         self.df['R']= self.df.apply(lambda x: self.get_density(x['P'], x['T']),axis=1)
+         self.df['S']= self.df.apply(lambda x: self.get_entropy(x['P'], x['T']),axis=1)
+         self.df['E']= self.df.apply(lambda x: self.get_internal_energy(x['P'], x['T']),axis=1)
 
-    def evaluate_PT(self, P, T):
-        raise NotImplementedError
 
 class SU2Fluid(Fluid):
     def __init__(self, name):
