@@ -2,15 +2,15 @@ import CoolProp.CoolProp as CP
 from fluidmodels_su2.SU2Models import *
 import numpy as np
 import pandas as pd
+
 class Fluid(object):
     def __init__(self, name):
         self.name = name
     
-    def create_table(self,Pmax, Pmin,Tmax, Tmin, Np, Nt):
-         P_vec= np.geomspace(Pmin, Pmax, Np)
+    def create_table(self,P_vec,Tmin, Tmax,  Nt):
          T_vec = np.linspace(Tmin, Tmax, Nt)
          T = np.array([[t for t in T_vec ] for p in P_vec])
-         P = np.array([[p for t in T_vec ] for p in P_vec])
+         P = np.array([[p*1e5 for t in T_vec ] for p in P_vec])
          self.df = pd.DataFrame(data= [T.flatten(), P.flatten()]).transpose()
          self.df.columns = ["T", "P"]
          self.df['R']= self.df.apply(lambda x: self.get_density(x['P'], x['T']),axis=1)
@@ -26,7 +26,7 @@ class SU2Fluid(Fluid):
         self.Model.SetTDState_PT(P,T)
         return self.Model.GetThermalConductivity()
     
-    def get_soundspeed(self, PT):
+    def get_soundspeed(self, P,T):
         self.Model.SetTDState_PT(P,T)
         return self.Model.GetSoundSpeed()
 
@@ -50,20 +50,23 @@ class CoolPropFluid(Fluid):
     def __init__(self, name):
         Fluid.__init__(self,name)
 
+    def get_soundspeed(self, P, T):
+        return CP.PropsSI("A", "P", P, "T", T, self.name)
+
     def get_thermal_conductivity(self, P, T):
-        return CP.PropsSI("L", "P", P, "T", self.name)
+        return CP.PropsSI("L", "P", P, "T", T, self.name)
 
     def get_density(self, P, T):
-        return CP.PropsSI("D", "P", P, "T", self.name)
+        return CP.PropsSI("D", "P", P, "T", T, self.name)
 
-    def get_enthalpy(self, P, T):
-        return CP.PropsSI("H", "P", P, "T", self.name)
+    def get_internal_energy(self, P, T):
+        return CP.PropsSI("U", "P", P, "T", T, self.name)
 
     def get_entropy(self, P, T):
-        return CP.PropsSI("D", "P", P, "T", self.name)
+        return CP.PropsSI("S", "P", P, "T", T, self.name)
 
     def get_viscosity(self, P, T):
-        return CP.PropsSI("V", "P", P, "T", self.name)
+        return CP.PropsSI("V", "P", P, "T", T, self.name)
 
 
 class IdealGasFluid(SU2Fluid):
@@ -95,7 +98,7 @@ class PengRobinsonFluid(IdealGasFluid):
         IdealGasFluid.__init__(self,name, Pref, Tref)
 
     def set_model(self):
-        self.Model = CPengRobinson(self.gamma, self.R, self.Tcrit, self.Pcrit, self.acentric)
+        self.Model = CPengRobinson(self.gamma, self.R, self.Pcrit, self.Tcrit, self.acentric)
 
 class SpecificPengRobinsonFluid(SpecificIdealGasFluid):
     def __init__(self, name, gamma, R):
@@ -105,6 +108,6 @@ class SpecificPengRobinsonFluid(SpecificIdealGasFluid):
         SpecificIdealGasFluid.__init__(self,name, gamma, R)
 
     def set_model(self):
-        self.Model = CPengRobinson(self.gamma, self.R, self.Tcrit, self.Pcrit, self.acentric)
+        self.Model = CPengRobinson(self.gamma, self.R, self.Pcrit, self.Tcrit, self.acentric)
 
 
