@@ -3,7 +3,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
+import re
 plt.rc('text', usetex=True)
+
+def get_columns(name, columns):
+    return filter(lambda x: re.match('^'+name, x) is not None, columns)
 
 def plot_figure(grouped, columnname, ylabel, title, xlim, ylim, figure_name, styles, logy, show_title):
     fig,ax = plt.subplots()
@@ -63,11 +67,25 @@ if __name__=="__main__":
     df = pd.concat([pr.df, ig.df, cp.df], axis=1)
     df['P']=df['P_PR'].apply(lambda x: "{0:0.1f}".format(x*1e-5))
     df['T']=df['T_PR']
+#    for col in get_columns('k',df.columns):        df[col] = df[col]*1e3;
+#    for col in get_columns('mu',df.columns):       df[col] = df[col]*1e6;
+    for col in get_columns('dSdP_R',df.columns): df[col] = df[col]*1e3;
+    for col in get_columns('dSdR_P',df.columns): df[col] = df[col]/-1e3;
+    for col in get_columns('dHdR_P',df.columns): df[col] = df[col]/-1e3;
 
-    grouped = df.groupby("P") 
+
+
+    grouped = df.groupby("P")
     plot_figure(grouped, 'R', r'$\displaystyle \rho$ [kg/m^3]',"Density with different models", [500,600], [0,1000], "density.png", styles,True, False)
     plot_figure(grouped, 'A', r'$\displaystyle c$ [m/s]',"Speed of sound with different models", [500,600], [150,240], "speedofsound.png", styles,False, False)
-
-
-
+#    plot_figure(grouped, 'L', 'k [kW /m K]', "Thermal conductivity with different models", [500,600], [25,45], "thermalconductivity.png", plist, styles, False)
+#    plot_figure(grouped, 'V', r'$\displaystyle \mu$ [$\displaystyle \mu$ Pa/ s]',"Viscosity with different models", [500,600], [10,15], "viscosity.png", plist, styles,False)
+    plot_figure(grouped, 'dSdR_P', r'$\displaystyle -\frac{\partial s}{\partial \rho}|_P$ ',#[J m^3/kg^2 K]',
+            "Parial derivative of entropy with respect to density at constant pressure", [500,600], [0.01,13], "dsdrho_p.png", styles,True, False)
+    plot_figure(grouped, 'dSdP_R', r'$\displaystyle \frac{\partial s}{\partial P}|_\rho$',# [MJ/kg K Pa]',
+            "Parial derivative of entropy with respect to pressure at constant density", [500,600], [0.5,300],"dsdp_rho.png", styles,True, False)
+    plot_figure(grouped, 'dHdR_P', r'$\displaystyle -\frac{\partial h}{\partial \rho}|_P$',# [J m^6/kg^2]',
+            "Parial derivative of enthalpy with respect to density at constant pressure", [500,600], [1,7500], "dhdrho_p.png", styles,True, False)
+    plot_figure(grouped, 'dHdP_R', r'$\displaystyle \frac{\partial h}{\partial P}|_\rho$',# [KJ/kg Pa]',
+            "Parial derivative of enthalpy with respect to pressure at constant density", [500,600], [0.2,130],"dhdp_rho.png", styles,True, False)
 
